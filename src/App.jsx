@@ -139,6 +139,63 @@ function EmailCaptureModal({ isOpen, onClose, onSubmit }) {
   );
 }
 
+// Cookie Consent Banner Component
+function CookieConsent() {
+  const [showBanner, setShowBanner] = useState(false);
+
+  useEffect(() => {
+    const consent = localStorage.getItem('cookie_consent');
+    if (!consent) {
+      setShowBanner(true);
+    }
+  }, []);
+
+  const acceptCookies = () => {
+    localStorage.setItem('cookie_consent', 'accepted');
+    setShowBanner(false);
+    trackEvent('cookie_consent', { action: 'accepted' });
+  };
+
+  const declineCookies = () => {
+    localStorage.setItem('cookie_consent', 'declined');
+    setShowBanner(false);
+    trackEvent('cookie_consent', { action: 'declined' });
+  };
+
+  if (!showBanner) return null;
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-black text-white p-4 z-50 shadow-lg">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex-1">
+          <p className="text-sm">
+            We use cookies and analytics to improve this tool and understand how it's used. 
+            No personal data is stored without your consent.{' '}
+            <a href="/privacy.html" target="_blank" className="underline hover:text-gray-300">
+              Learn more
+            </a>
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={declineCookies}
+            className="px-4 py-2 border border-white rounded hover:bg-white hover:text-black transition-colors text-sm"
+          >
+            Decline
+          </button>
+          <button
+            onClick={acceptCookies}
+            className="px-4 py-2 rounded text-sm font-semibold transition-colors"
+            style={{ backgroundColor: COLORS.pink }}
+          >
+            Accept
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OrganizationAssessment() {
   const PHASES = { WELCOME: 'welcome', PRIMER: 'primer', STATEMENTS: 'statements', REPORT: 'report' };
   
@@ -344,7 +401,7 @@ export default function OrganizationAssessment() {
     <div className="min-h-screen bg-gray-50">
       <EmailCaptureModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)}
         onSubmit={(data) => { setShowEmailModal(false); alert(`Report will be sent to ${data.email}`); }} />
-      
+      <CookieConsent />
       <div className="max-w-5xl mx-auto px-6 py-12 space-y-8 print-content">
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-4 no-print">
