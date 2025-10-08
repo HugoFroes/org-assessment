@@ -11,9 +11,14 @@ const COLORS = {
 
 // Analytics tracking
 const trackEvent = (eventName, eventData = {}) => {
-  if (typeof window !== 'undefined' && window.gtag) {
+  // Only track if user accepted cookies
+  const consent = localStorage.getItem('cookie_consent');
+  
+  if (consent === 'accepted' && typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, eventData);
   }
+  
+  // Always log to console for debugging
   console.log('Analytics:', eventName, eventData);
 };
 
@@ -99,6 +104,7 @@ const calculateScores = (responses, shuffledStatements) => {
   return { overall: Math.round(overallScore), principles: principleScores, thinkRight, rightThing };
 };
 
+// Email Capture Modal Component
 function EmailCaptureModal({ isOpen, onClose, onSubmit }) {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -171,21 +177,21 @@ function CookieConsent() {
           <p className="text-sm">
             We use cookies and analytics to improve this tool and understand how it's used. 
             No personal data is stored without your consent.{' '}
-            <a href="/privacy.html" target="_blank" className="underline hover:text-gray-300">
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">
               Learn more
             </a>
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-shrink-0">
           <button
             onClick={declineCookies}
-            className="px-4 py-2 border border-white rounded hover:bg-white hover:text-black transition-colors text-sm"
+            className="px-4 py-2 border border-white rounded hover:bg-white hover:text-black transition-colors text-sm whitespace-nowrap"
           >
             Decline
           </button>
           <button
             onClick={acceptCookies}
-            className="px-4 py-2 rounded text-sm font-semibold transition-colors"
+            className="px-4 py-2 rounded text-sm font-semibold transition-colors whitespace-nowrap"
             style={{ backgroundColor: COLORS.pink }}
           >
             Accept
@@ -196,6 +202,7 @@ function CookieConsent() {
   );
 }
 
+// Main Application Component
 export default function OrganizationAssessment() {
   const PHASES = { WELCOME: 'welcome', PRIMER: 'primer', STATEMENTS: 'statements', REPORT: 'report' };
   
@@ -244,48 +251,59 @@ export default function OrganizationAssessment() {
 
   if (phase === PHASES.WELCOME) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-8 h-8 bg-black relative">
-              <div className="absolute bottom-0 right-0 w-2 h-2" style={{ backgroundColor: COLORS.pink }}></div>
-            </div>
-            <span className="text-xl font-light tracking-wider">MAKE THE PRODUCT SHIFT</span>
-          </div>
-
-          <div className="mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Organization<br />Maturity Assessment
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl">
-              Understand your organization's strengths and opportunities for growth across key operating principles.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {[
-              { icon: CheckCircle, title: '34 Statements', desc: '10-12 minutes' },
-              { icon: BarChart3, title: 'Comprehensive Analysis', desc: '4 key dimensions' },
-              { icon: Target, title: 'Actionable Insights', desc: 'Personalized recommendations' }
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <item.icon className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.pink }} />
-                <h3 className="font-semibold mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
+      <>
+        <CookieConsent />
+        <div className="min-h-screen bg-white">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="flex items-center gap-3 mb-16">
+              <div className="w-8 h-8 bg-black relative">
+                <div className="absolute bottom-0 right-0 w-2 h-2" style={{ backgroundColor: COLORS.pink }}></div>
               </div>
-            ))}
-          </div>
+              <span className="text-xl font-light tracking-wider">MAKE THE PRODUCT SHIFT</span>
+            </div>
 
-          <div className="text-center">
-            <button onClick={() => { trackEvent('assessment_started'); setPhase(PHASES.PRIMER); }}
-              className="inline-flex items-center gap-2 px-8 py-4 text-white rounded-lg text-lg font-semibold transition-all hover:scale-105"
-              style={{ backgroundColor: COLORS.black }}>
-              Begin Assessment <ArrowRight className="w-5 h-5" />
-            </button>
-            <p className="text-sm text-gray-500 mt-4">Free • Anonymous • 10 minutes</p>
+            <div className="mb-16">
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+                Organization<br />Maturity Assessment
+              </h1>
+              <p className="text-xl text-gray-600 max-w-2xl">
+                Understand your organization's strengths and opportunities for growth across key operating principles.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              {[
+                { icon: CheckCircle, title: '34 Statements', desc: '10-12 minutes' },
+                { icon: BarChart3, title: 'Comprehensive Analysis', desc: '4 key dimensions' },
+                { icon: Target, title: 'Actionable Insights', desc: 'Personalized recommendations' }
+              ].map((item, i) => (
+                <div key={i} className="text-center">
+                  <item.icon className="w-10 h-10 mx-auto mb-3" style={{ color: COLORS.pink }} />
+                  <h3 className="font-semibold mb-1">{item.title}</h3>
+                  <p className="text-sm text-gray-600">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center">
+              <button onClick={() => { trackEvent('assessment_started'); setPhase(PHASES.PRIMER); }}
+                className="inline-flex items-center gap-2 px-8 py-4 text-white rounded-lg text-lg font-semibold transition-all hover:scale-105"
+                style={{ backgroundColor: COLORS.black }}>
+                Begin Assessment <ArrowRight className="w-5 h-5" />
+              </button>
+              <p className="text-sm text-gray-500 mt-4">Free • Anonymous • 10 minutes</p>
+            </div>
+
+            <div className="text-center mt-12 text-sm text-gray-500">
+              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">
+                Privacy Policy
+              </a>
+              {' • '}
+              <span>© 2025 Make the Product Shift</span>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -293,39 +311,42 @@ export default function OrganizationAssessment() {
     const allAnswered = assessmentData.primerQuestions.every(q => primerAnswers[q.id]);
     
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-6 py-12">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">Context</h2>
-            <p className="text-gray-600">Help us understand your organizational context</p>
-            <p className="text-sm text-gray-500 mt-2">* All fields are required</p>
-          </div>
+      <>
+        <CookieConsent />
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-3xl mx-auto px-6 py-12">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold mb-2">Context</h2>
+              <p className="text-gray-600">Help us understand your organizational context</p>
+              <p className="text-sm text-gray-500 mt-2">* All fields are required</p>
+            </div>
 
-          <div className="space-y-4">
-            {assessmentData.primerQuestions.map((q, i) => (
-              <div key={q.id} className="bg-white p-6 rounded-lg border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  {i + 1}. {q.question} <span className="text-red-500">*</span>
-                </label>
-                <select value={primerAnswers[q.id] || ''}
-                  onChange={(e) => setPrimerAnswers({ ...primerAnswers, [q.id]: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white">
-                  <option value="">Select...</option>
-                  {q.options.map((opt, idx) => <option key={idx} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-            ))}
-          </div>
+            <div className="space-y-4">
+              {assessmentData.primerQuestions.map((q, i) => (
+                <div key={q.id} className="bg-white p-6 rounded-lg border border-gray-200">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    {i + 1}. {q.question} <span className="text-red-500">*</span>
+                  </label>
+                  <select value={primerAnswers[q.id] || ''}
+                    onChange={(e) => setPrimerAnswers({ ...primerAnswers, [q.id]: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-black bg-white">
+                    <option value="">Select...</option>
+                    {q.options.map((opt, idx) => <option key={idx} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
 
-          <button onClick={() => { trackEvent('primer_completed', primerAnswers); setPhase(PHASES.STATEMENTS); }}
-            disabled={!allAnswered}
-            className={`w-full mt-8 py-4 rounded-lg text-white font-semibold transition-all ${
-              allAnswered ? 'bg-black hover:scale-[1.02]' : 'bg-gray-300 cursor-not-allowed'
-            }`}>
-            {allAnswered ? 'Continue →' : `Complete all (${Object.keys(primerAnswers).length}/6)`}
-          </button>
+            <button onClick={() => { trackEvent('primer_completed', primerAnswers); setPhase(PHASES.STATEMENTS); }}
+              disabled={!allAnswered}
+              className={`w-full mt-8 py-4 rounded-lg text-white font-semibold transition-all ${
+                allAnswered ? 'bg-black hover:scale-[1.02]' : 'bg-gray-300 cursor-not-allowed'
+              }`}>
+              {allAnswered ? 'Continue →' : `Complete all (${Object.keys(primerAnswers).length}/6)`}
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -336,60 +357,63 @@ export default function OrganizationAssessment() {
     const hasResponded = responses[statement.id] !== undefined;
 
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12">
-        <div className="max-w-3xl w-full">
-          <div className="mb-8">
-            <div className="flex justify-between text-sm text-gray-600 mb-3">
-              <span className="font-medium">{currentIndex + 1} / {shuffledStatements.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
-              <div className="h-1.5 rounded-full transition-all" 
-                   style={{ width: `${progress}%`, backgroundColor: COLORS.teal }} />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200 mb-8">
-            <p className="text-2xl leading-relaxed mb-12">{statement.text}</p>
-
-            <div>
-              <div className="flex justify-between text-sm font-medium text-gray-600 mb-6">
-                <span>Strongly Disagree</span>
-                <span>Strongly Agree</span>
+      <>
+        <CookieConsent />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12">
+          <div className="max-w-3xl w-full">
+            <div className="mb-8">
+              <div className="flex justify-between text-sm text-gray-600 mb-3">
+                <span className="font-medium">{currentIndex + 1} / {shuffledStatements.length}</span>
+                <span>{Math.round(progress)}%</span>
               </div>
-              
-              <input type="range" min="0" max="100" value={currentValue}
-                onChange={(e) => { setResponses({ ...responses, [statement.id]: parseInt(e.target.value) }); 
-                  trackEvent('statement_answered', { id: statement.id }); }}
-                className="w-full h-2 rounded-lg appearance-none cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, ${COLORS.pink} 0%, ${COLORS.pink} ${currentValue}%, #E5E7EB ${currentValue}%, #E5E7EB 100%)`
-                }} />
-              
-              <div className="flex justify-center mt-6">
-                <div className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  currentValue < 30 ? 'scale-150' : currentValue < 45 ? 'scale-125' :
-                  currentValue < 55 ? 'scale-100' : currentValue < 70 ? 'scale-125' : 'scale-150'
-                }`} style={{ backgroundColor: COLORS.pink }} />
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div className="h-1.5 rounded-full transition-all" 
+                     style={{ width: `${progress}%`, backgroundColor: COLORS.pink }} />
               </div>
             </div>
-          </div>
 
-          <div className="flex gap-4">
-            <button onClick={() => currentIndex > 0 && setCurrentIndex(currentIndex - 1)}
-              disabled={currentIndex === 0}
-              className="px-6 py-3 border border-gray-300 rounded-lg disabled:opacity-30 hover:border-black bg-white">
-              ← Back
-            </button>
-            <button onClick={handleNext} disabled={!hasResponded}
-              className={`flex-1 py-3 rounded-lg font-semibold ${
-                hasResponded ? 'bg-black text-white hover:scale-[1.02]' : 'bg-gray-200 text-gray-400'
-              }`}>
-              {currentIndex === shuffledStatements.length - 1 ? 'View Results →' : 'Next →'}
-            </button>
+            <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm border border-gray-200 mb-8">
+              <p className="text-2xl leading-relaxed mb-12">{statement.text}</p>
+
+              <div>
+                <div className="flex justify-between text-sm font-medium text-gray-600 mb-6">
+                  <span>Strongly Disagree</span>
+                  <span>Strongly Agree</span>
+                </div>
+                
+                <input type="range" min="0" max="100" value={currentValue}
+                  onChange={(e) => { setResponses({ ...responses, [statement.id]: parseInt(e.target.value) }); 
+                    trackEvent('statement_answered', { id: statement.id }); }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+                  style={{
+                    background: `linear-gradient(to right, ${COLORS.pink} 0%, ${COLORS.pink} ${currentValue}%, #E5E7EB ${currentValue}%, #E5E7EB 100%)`
+                  }} />
+                
+                <div className="flex justify-center mt-6">
+                  <div className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    currentValue < 30 ? 'scale-150' : currentValue < 45 ? 'scale-125' :
+                    currentValue < 55 ? 'scale-100' : currentValue < 70 ? 'scale-125' : 'scale-150'
+                  }`} style={{ backgroundColor: COLORS.pink }} />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button onClick={() => currentIndex > 0 && setCurrentIndex(currentIndex - 1)}
+                disabled={currentIndex === 0}
+                className="px-6 py-3 border border-gray-300 rounded-lg disabled:opacity-30 hover:border-black bg-white">
+                ← Back
+              </button>
+              <button onClick={handleNext} disabled={!hasResponded}
+                className={`flex-1 py-3 rounded-lg font-semibold ${
+                  hasResponded ? 'bg-black text-white hover:scale-[1.02]' : 'bg-gray-200 text-gray-400'
+                }`}>
+                {currentIndex === shuffledStatements.length - 1 ? 'View Results →' : 'Next →'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -398,109 +422,111 @@ export default function OrganizationAssessment() {
   const challenges = scores.principles.filter(p => p.score < 60);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <CookieConsent />
       <EmailCaptureModal isOpen={showEmailModal} onClose={() => setShowEmailModal(false)}
         onSubmit={(data) => { setShowEmailModal(false); alert(`Report will be sent to ${data.email}`); }} />
-      <CookieConsent />
-      <div className="max-w-5xl mx-auto px-6 py-12 space-y-8 print-content">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-4 no-print">
-            <div className="w-8 h-8 bg-black relative">
-              <div className="absolute bottom-0 right-0 w-2 h-2" style={{ backgroundColor: COLORS.pink }}></div>
+      
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-5xl mx-auto px-6 py-12 space-y-8 print-content">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4 no-print">
+              <div className="w-8 h-8 bg-black relative">
+                <div className="absolute bottom-0 right-0 w-2 h-2" style={{ backgroundColor: COLORS.pink }}></div>
+              </div>
+              <span className="text-xl font-light tracking-wider">MAKE THE PRODUCT SHIFT</span>
             </div>
-            <span className="text-xl font-light tracking-wider">MAKE THE PRODUCT SHIFT</span>
+            <h1 className="text-4xl font-bold mb-2">Your Assessment Results</h1>
+            <p className="text-gray-600">{primerAnswers.org_size} • {primerAnswers.industry}</p>
+            <p className="text-sm text-gray-500 mt-2">Generated: {new Date().toLocaleDateString()}</p>
           </div>
-          <h1 className="text-4xl font-bold mb-2">Your Assessment Results</h1>
-          <p className="text-gray-600">{primerAnswers.org_size} • {primerAnswers.industry}</p>
-          <p className="text-sm text-gray-500 mt-2">Generated: {new Date().toLocaleDateString()}</p>
-        </div>
 
-        <div className="bg-black text-white rounded-2xl p-12 text-center">
-          <p className="text-lg opacity-75 mb-3">Overall Maturity Score</p>
-          <div className="text-8xl font-bold mb-4">{scores.overall}</div>
-          <div className="inline-block px-6 py-2 rounded-full" style={{ backgroundColor: COLORS.pink }}>
-            <span className="text-lg font-semibold">
-              {scores.overall >= 80 ? 'Advanced' : scores.overall >= 65 ? 'Developing' : 
-               scores.overall >= 50 ? 'Emerging' : 'Early Stage'}
-            </span>
+          <div className="bg-black text-white rounded-2xl p-12 text-center">
+            <p className="text-lg opacity-75 mb-3">Overall Maturity Score</p>
+            <div className="text-8xl font-bold mb-4">{scores.overall}</div>
+            <div className="inline-block px-6 py-2 rounded-full" style={{ backgroundColor: COLORS.pink }}>
+              <span className="text-lg font-semibold">
+                {scores.overall >= 80 ? 'Advanced' : scores.overall >= 65 ? 'Developing' : 
+                 scores.overall >= 50 ? 'Emerging' : 'Early Stage'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold mb-1">Building the Think Right</h3>
-            <p className="text-sm text-gray-600 mb-4">Strategy & Direction</p>
-            <div className="text-5xl font-bold" style={{ color: COLORS.pink }}>{scores.thinkRight}</div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-6 border border-gray-200">
+              <h3 className="font-semibold mb-1">Building the Think Right</h3>
+              <p className="text-sm text-gray-600 mb-4">Strategy & Direction</p>
+              <div className="text-5xl font-bold" style={{ color: COLORS.pink }}>{scores.thinkRight}</div>
+            </div>
+            <div className="bg-white rounded-xl p-6 border border-gray-200">
+              <h3 className="font-semibold mb-1">Building the Right Thing</h3>
+              <p className="text-sm text-gray-600 mb-4">Execution & Culture</p>
+              <div className="text-5xl font-bold" style={{ color: COLORS.pink }}>{scores.rightThing}</div>
+            </div>
           </div>
-          <div className="bg-white rounded-xl p-6 border border-gray-200">
-            <h3 className="font-semibold mb-1">Building the Right Thing</h3>
-            <p className="text-sm text-gray-600 mb-4">Execution & Culture</p>
-            <div className="text-5xl font-bold" style={{ color: COLORS.pink }}>{scores.rightThing}</div>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl p-8 border border-gray-200">
-          <h2 className="text-2xl font-bold mb-6">Operating Principles</h2>
-          <div className="space-y-6">
-            {scores.principles.map(p => (
-              <div key={p.id}>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold">{p.name}</span>
-                  <span className="text-2xl font-bold">{p.score}</span>
+          <div className="bg-white rounded-xl p-8 border border-gray-200">
+            <h2 className="text-2xl font-bold mb-6">Operating Principles</h2>
+            <div className="space-y-6">
+              {scores.principles.map(p => (
+                <div key={p.id}>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-semibold">{p.name}</span>
+                    <span className="text-2xl font-bold">{p.score}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="h-3 rounded-full" style={{ width: `${p.score}%`, backgroundColor: COLORS.pink }} />
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div className="h-3 rounded-full" style={{ width: `${p.score}%`, backgroundColor: COLORS.pink }} />
+              ))}
+            </div>
+          </div>
+
+          {strengths.length > 0 && (
+            <div className="bg-white rounded-xl p-8 border-2" style={{ borderColor: COLORS.pink }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Award style={{ color: COLORS.pink }} />
+                <h2 className="text-2xl font-bold">Strengths</h2>
+              </div>
+              {strengths.map(s => (
+                <div key={s.id} className="flex justify-between p-4 bg-gray-50 rounded-lg mb-2">
+                  <span className="font-medium">{s.name}</span>
+                  <span className="text-xl font-bold" style={{ color: COLORS.pink }}>{s.score}</span>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {strengths.length > 0 && (
-          <div className="bg-white rounded-xl p-8 border-2" style={{ borderColor: COLORS.pink }}>
-            <div className="flex items-center gap-2 mb-4">
-              <Award style={{ color: COLORS.pink }} />
-              <h2 className="text-2xl font-bold">Strengths</h2>
+              ))}
             </div>
-            {strengths.map(s => (
-              <div key={s.id} className="flex justify-between p-4 bg-gray-50 rounded-lg mb-2">
-                <span className="font-medium">{s.name}</span>
-                <span className="text-xl font-bold" style={{ color: COLORS.pink }}>{s.score}</span>
-              </div>
-            ))}
-          </div>
-        )}
+          )}
 
-        {challenges.length > 0 && (
-          <div className="bg-white rounded-xl p-8 border-2 border-orange-200">
-            <div className="flex items-center gap-2 mb-4">
-              <AlertCircle className="text-orange-500" />
-              <h2 className="text-2xl font-bold">Areas for Improvement</h2>
+          {challenges.length > 0 && (
+            <div className="bg-white rounded-xl p-8 border-2 border-orange-200">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle className="text-orange-500" />
+                <h2 className="text-2xl font-bold">Areas for Improvement</h2>
+              </div>
+              {challenges.map(c => (
+                <div key={c.id} className="flex justify-between p-4 bg-orange-50 rounded-lg mb-2">
+                  <span className="font-medium">{c.name}</span>
+                  <span className="text-xl font-bold text-orange-600">{c.score}</span>
+                </div>
+              ))}
             </div>
-            {challenges.map(c => (
-              <div key={c.id} className="flex justify-between p-4 bg-orange-50 rounded-lg mb-2">
-                <span className="font-medium">{c.name}</span>
-                <span className="text-xl font-bold text-orange-600">{c.score}</span>
-              </div>
-            ))}
-          </div>
-        )}
+          )}
 
-        <div className="bg-black text-white rounded-xl p-8 no-print">
-          <h2 className="text-2xl font-bold mb-4">Ready to Transform Your Organization?</h2>
-          <p className="mb-6 opacity-90">
-            I conduct comprehensive organizational assessments and can work as an interim CPO to help you optimize your product organization.
-          </p>
-          <ul className="space-y-2 mb-6">
-            {['Optimize product organization structure', 'Improve processes and ways of working', 
-              'Build high-performing teams', 'Navigate digital transformation'].map((item, i) => (
-              <li key={i} className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" style={{ color: COLORS.pink }} />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <a href="https://calendly.com/hugofroesdesign/1-on-1" target="_blank" rel="noopener noreferrer"
+          <div className="bg-black text-white rounded-xl p-8 no-print">
+            <h2 className="text-2xl font-bold mb-4">Ready to Transform Your Organization?</h2>
+            <p className="mb-6 opacity-90">
+              I conduct comprehensive organizational assessments and can work as an interim CPO to help you optimize your product organization.
+            </p>
+            <ul className="space-y-2 mb-6">
+              {['Optimize product organization structure', 'Improve processes and ways of working', 
+                'Build high-performing teams', 'Navigate digital transformation'].map((item, i) => (
+                <li key={i} className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" style={{ color: COLORS.pink }} />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <a href="https://calendly.com/hugofroesdesign/1-on-1" target="_blank" rel="no opener noreferrer"
             onClick={() => trackEvent('cta_clicked', { type: 'calendly' })}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold hover:scale-105"
             style={{ backgroundColor: COLORS.pink, color: 'white' }}>
@@ -542,5 +568,6 @@ export default function OrganizationAssessment() {
         </div>
       </div>
     </div>
+    </>
   );
 }
