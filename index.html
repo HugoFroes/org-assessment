@@ -1,11 +1,32 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Organization Assessment | Make the Product Shift</title>
-    <meta name="description" content="Assess your organization's maturity across key operating principles">
-  </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organization Assessment | Make the Product Shift</title>
+  <meta name="description" content="Assess your organization's maturity across key operating principles">
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-YD49G84TR0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    
+    // Don't send pageview yet - wait for cookie consent
+    gtag('config', 'G-YD49G84TR0', {
+      'send_page_view': false
+    });
+    
+    // Check consent and send pageview if accepted
+    const consent = localStorage.getItem('cookie_consent');
+    if (consent === 'accepted') {
+      gtag('config', 'G-YD49G84TR0', {
+        'send_page_view': true
+      });
+    }
+  </script>
+</head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

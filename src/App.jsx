@@ -18,7 +18,7 @@ const trackEvent = (eventName, eventData = {}) => {
     window.gtag('event', eventName, eventData);
   }
   
-  // Always log to console for debugging
+  // Always log to console for debugging (remove in production)
   console.log('Analytics:', eventName, eventData);
 };
 
@@ -293,6 +293,13 @@ export default function OrganizationAssessment() {
               </button>
               <p className="text-sm text-gray-500 mt-4">Free • Anonymous • 10 minutes</p>
             </div>
+            <div className="text-center mt-12 text-sm text-gray-500">
+            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">
+              Privacy Policy
+            </a>
+            {' • '}
+            <span>© 2025 Make the Product Shift</span>
+          </div>
 
             <div className="text-center mt-12 text-sm text-gray-500">
               <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="hover:text-gray-700 underline">
